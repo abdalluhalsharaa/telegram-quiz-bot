@@ -11,11 +11,8 @@ bot.on('message', async (msg) => {
 
     const parts = text.split('\n\n');
 
-    // العنوان
     const title = parts[0].trim();
-
-    // الأسئلة
-    const questionsText = parts.slice(1).join('\n\n');
+    const questionsText = parts.slice(1).join('\n\n').trim();
 
     // إرسال العنوان
     const sentTitle = await bot.sendMessage(
@@ -23,12 +20,15 @@ bot.on('message', async (msg) => {
         `🔻🔻🔻🔻🔻🔻🔻\n${title}\n🔻🔻🔻🔻🔻🔻🔻`
     );
 
-    // 🔥 تثبيت رسالة العنوان
+    // تثبيت الرسالة (Pin)
     try {
         await bot.pinChatMessage(CHANNEL_ID, sentTitle.message_id);
     } catch (err) {
         console.log("Pin error:", err.message);
     }
+
+    // إذا ما في أسئلة → وقف
+    if (!questionsText) return;
 
     const questions = questionsText.split(/\n\s*\n/);
 
@@ -62,7 +62,20 @@ bot.on('message', async (msg) => {
                 options,
                 {
                     type: 'quiz',
-                    correct_option_id: correctIndex,
+                    correct_option_id: correctIndex
+                }
+            );
+        } catch (err) {
+            console.log("Poll error:", err.message);
+        }
+    }
+
+    // رسالة النهاية
+    await bot.sendMessage(
+        CHANNEL_ID,
+        '✅✅✅ تم بحمد الله ✅✅✅'
+    );
+});                    correct_option_id: correctIndex,
                     is_anonymous: false
                 }
             );
