@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express();
 
-// Web server (مهم لـ Render)
 app.get('/', (req, res) => {
     res.send('Bot is alive');
 });
@@ -21,40 +20,73 @@ bot.on('message', async (msg) => {
     const text = msg.text;
     if (!text) return;
 
-    const parts = text.split('\n\n');
+    // ==============================
+    // 1. Detect Title Block
+    // ==============================
+    const titleMatch = text.match(/🔻{7}\s*\n([\s\S]*?)\n🔻{7}/);
 
-    const title = parts[0].trim();
-    const questionsText = parts.slice(1).join('\n\n').trim();
+    let hasTitle = false;
+    let titleMessageId = null;
 
-    // إرسال العنوان
-    const sentTitle = await bot.sendMessage(
-        CHANNEL_ID,
-        `🔻🔻🔻🔻🔻🔻🔻\n${title}\n🔻🔻🔻🔻🔻🔻🔻`
-    );
+    if (titleMatch) {
+        hasTitle = true;
 
-    // تثبيت العنوان
-    try {
-        await bot.pinChatMessage(CHANNEL_ID, sentTitle.message_id);
-    } catch (err) {
-        console.log("Pin error:", err.message);
+        const title = titleMatch[1].trim();
+
+        const sentTitle = await bot.sendMessage(
+            CHANNEL_ID,
+            `🔻🔻🔻🔻🔻🔻🔻\n${title}\n🔻🔻🔻🔻🔻🔻🔻`
+        );
+
+        try {
+            await bot.pinChatMessage(CHANNEL_ID, sentTitle.message_id);
+        } catch (err) {
+            console.log("Pin error:", err.message);
+        }
     }
 
-    if (!questionsText) return;
+    // ==============================
+    // 2. If it's just "done message"
+    // ==============================
+    if (text.includes('✅✅✅ تم بحمد الله')) {
+        await bot.sendMessage(CHANNEL_ID, '✅✅✅ تم بحمد الله ✅✅✅');
+        return;
+    }
 
-    const questions = questionsText.split(/\n\s*\n/);
+    // ==============================
+    // 3. Extract questions
+    // ==============================
+    const lines = text.split('\n');
 
-    for (let q of questions) {
-        const lines = q.split('\n');
+    let questionsBlock = [];
+    let current = [];
 
-        if (lines.length < 5) continue;
+    for (let line of lines) {
+        if (/^\d+\.\s/.test(line)) {
+            if (current.length) questionsBlock.push(current.join('\n'));
+            current = [line];
+        } else {
+            if (current.length) current.push(line);
+        }
+    }
 
-        const question = lines[0].replace(/^\d+\.\s*/, '').trim();
+    if (current.length) questionsBlock.push(current.join('\n'));
+
+    // ==============================
+    // 4. Send MCQs
+    // ==============================
+    for (let q of questionsBlock) {
+        const qLines = q.split('\n');
+
+        if (qLines.length < 5) continue;
+
+        const question = qLines[0].replace(/^\d+\.\s*/, '').trim();
 
         let options = [];
         let correctIndex = -1;
 
         for (let i = 1; i <= 4; i++) {
-            let option = lines[i].replace(/^[A-D]\)\s*/, '').trim();
+            let option = qLines[i].replace(/^[A-D]\)\s*/, '').trim();
 
             if (option.includes('✅')) {
                 correctIndex = i - 1;
@@ -80,9 +112,4 @@ bot.on('message', async (msg) => {
             console.log("Poll error:", err.message);
         }
     }
-
-    await bot.sendMessage(
-        CHANNEL_ID,
-        '✅✅✅ تم بحمد الله ✅✅✅'
-    );
 });
