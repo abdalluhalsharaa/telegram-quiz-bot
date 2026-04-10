@@ -85,31 +85,4 @@ bot.on('message', async (msg) => {
         CHANNEL_ID,
         '✅✅✅ تم بحمد الله ✅✅✅'
     );
-});                    correct_option_id: correctIndex
-                }
-            );
-        } catch (err) {
-            console.log("Poll error:", err.message);
-        }
-    }
-
-    // رسالة النهاية
-    await bot.sendMessage(
-        CHANNEL_ID,
-        '✅✅✅ تم بحمد الله ✅✅✅'
-    );
-});                    correct_option_id: correctIndex,
-                    is_anonymous: false
-                }
-            );
-        } catch (err) {
-            console.log(err.message);
-        }
-    }
-
-    // رسالة النهاية
-    await bot.sendMessage(
-        CHANNEL_ID,
-        '✅✅✅ تم بحمد الله ✅✅✅'
-    );
 });
