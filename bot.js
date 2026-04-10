@@ -1,3 +1,15 @@
+const express = require('express');
+const app = express();
+
+// Web server (مهم لـ Render)
+app.get('/', (req, res) => {
+    res.send('Bot is alive');
+});
+
+app.listen(3000, () => {
+    console.log('Server running on port 3000');
+});
+
 const TelegramBot = require('node-telegram-bot-api');
 
 const token = process.env.TOKEN;
@@ -20,14 +32,13 @@ bot.on('message', async (msg) => {
         `🔻🔻🔻🔻🔻🔻🔻\n${title}\n🔻🔻🔻🔻🔻🔻🔻`
     );
 
-    // تثبيت الرسالة (Pin)
+    // تثبيت العنوان
     try {
         await bot.pinChatMessage(CHANNEL_ID, sentTitle.message_id);
     } catch (err) {
         console.log("Pin error:", err.message);
     }
 
-    // إذا ما في أسئلة → وقف
     if (!questionsText) return;
 
     const questions = questionsText.split(/\n\s*\n/);
@@ -63,6 +74,18 @@ bot.on('message', async (msg) => {
                 {
                     type: 'quiz',
                     correct_option_id: correctIndex
+                }
+            );
+        } catch (err) {
+            console.log("Poll error:", err.message);
+        }
+    }
+
+    await bot.sendMessage(
+        CHANNEL_ID,
+        '✅✅✅ تم بحمد الله ✅✅✅'
+    );
+});                    correct_option_id: correctIndex
                 }
             );
         } catch (err) {
