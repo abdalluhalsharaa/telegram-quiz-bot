@@ -6,7 +6,7 @@ const token = process.env.TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
 // قناتك
-const CHANNEL_ID = '@CoronaryQuestions_bot';
+const CHANNEL_ID = '@CoronaryQuestions';
 
 bot.on('message', async (msg) => {
     const text = msg.text;
