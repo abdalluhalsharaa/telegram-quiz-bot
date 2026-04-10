@@ -1,18 +1,36 @@
 const TelegramBot = require('node-telegram-bot-api');
 
-// التوكن يأتي من البيئة (Render)
 const token = process.env.TOKEN;
-
 const bot = new TelegramBot(token, { polling: true });
 
-// قناتك
 const CHANNEL_ID = '@CoronaryQuestions';
 
 bot.on('message', async (msg) => {
     const text = msg.text;
     if (!text) return;
 
-    const questions = text.split(/\n\s*\n/);
+    const parts = text.split('\n\n');
+
+    // العنوان
+    const title = parts[0].trim();
+
+    // الأسئلة
+    const questionsText = parts.slice(1).join('\n\n');
+
+    // إرسال العنوان
+    const sentTitle = await bot.sendMessage(
+        CHANNEL_ID,
+        `🔻🔻🔻🔻🔻🔻🔻\n${title}\n🔻🔻🔻🔻🔻🔻🔻`
+    );
+
+    // 🔥 تثبيت رسالة العنوان
+    try {
+        await bot.pinChatMessage(CHANNEL_ID, sentTitle.message_id);
+    } catch (err) {
+        console.log("Pin error:", err.message);
+    }
+
+    const questions = questionsText.split(/\n\s*\n/);
 
     for (let q of questions) {
         const lines = q.split('\n');
@@ -25,9 +43,7 @@ bot.on('message', async (msg) => {
         let correctIndex = -1;
 
         for (let i = 1; i <= 4; i++) {
-            let option = lines[i];
-
-            option = option.replace(/^[A-D]\)\s*/, '').trim();
+            let option = lines[i].replace(/^[A-D]\)\s*/, '').trim();
 
             if (option.includes('✅')) {
                 correctIndex = i - 1;
@@ -54,4 +70,10 @@ bot.on('message', async (msg) => {
             console.log(err.message);
         }
     }
+
+    // رسالة النهاية
+    await bot.sendMessage(
+        CHANNEL_ID,
+        '✅✅✅ تم بحمد الله ✅✅✅'
+    );
 });
